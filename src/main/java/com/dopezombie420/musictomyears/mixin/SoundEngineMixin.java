@@ -26,7 +26,9 @@ import net.minecraft.client.sound.Sounds;
 import paulscode.sound.SoundSystem;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screen.CreditsScreen;
 import net.minecraft.entity.mob.player.PlayerEntity;
+import net.minecraft.entity.mob.monster.boss.EnderDragonEntity;
 
 @Mixin(SoundEngine.class)
 public class SoundEngineMixin {
@@ -42,10 +44,12 @@ public class SoundEngineMixin {
 	@Shadow
 	private Random random;
 	@Shadow
-	private int musicCooldown = 0;
+	private int musicCooldown;
 	
 	private static final Logger logger = LogManager.getLogger("Music to my ears!");
 	private File resourceDir = new File(Minecraft.getWorkingDirectory(), "resources/");
+	private String soundCat = null;
+	private String currentSoundCat = null;
 	
 	private Sounds creativeMusic = new Sounds();
 	private Sounds netherMusic = new Sounds();
@@ -182,26 +186,46 @@ public class SoundEngineMixin {
 	public void tickMusic() {
 		logger.info("music ticker");
 		if (started && this.options.musicVolume != 0.0F) {
+			
+			Sound sound = null;
+			
+			if (false) {
+				//sound = this.menuMusic.getRandom();
+			} else if (Minecraft.getInstance().screen != null) {
+				this.musicCooldown = 0;
+				sound = this.creditsMusic.getRandom();
+				soundCat = "credits";
+			} else if (Minecraft.getInstance().player.world.getEntityCount(EnderDragonEntity.class) > 0) {
+				this.musicCooldown = 0;
+				sound = this.bossMusic.getRandom();
+				soundCat = "boss";
+			} else if (Minecraft.getInstance().player.dimension == -1) {
+				sound = this.netherMusic.getRandom();
+				soundCat = "nether";
+			} else if (Minecraft.getInstance().player.dimension == 1) {
+				sound = this.endMusic.getRandom();
+				soundCat = "end";
+				this.musicCooldown = 0;
+			} else if (Minecraft.getInstance().player.abilities.canFly) {
+				sound = this.creativeMusic.getRandom();
+				soundCat = "creative";
+			} else {
+				sound = this.music.getRandom();
+				soundCat = "survival";
+			}
+			
+			if (currentSoundCat != null && soundCat != null) {
+				if (currentSoundCat != soundCat) {
+					system.stop("BgMusic");
+					this.musicCooldown = this.random.nextInt(12000) + 12000;
+				}
+			}
+			
 			if (!system.playing("BgMusic") && !system.playing("streaming")) {
 				if (this.musicCooldown > 0) {
 					this.musicCooldown--;
 					return;
 				}
-				
-				Sound sound;
-				
-				if (false) {
-					//sound = this.menuMusic.getRandom();
-				} else if (Minecraft.getInstance().player.dimension == -1) {
-					sound = this.netherMusic.getRandom();
-				} else if (Minecraft.getInstance().player.dimension == 1) {
-					sound = this.endMusic.getRandom();
-				} else if (Minecraft.getInstance().player.abilities.canFly) {
-					sound = this.creativeMusic.getRandom();
-				} else {
-					sound = this.music.getRandom();
-				}
-
 				
 				if (sound != null) {
 					logger.info("Music Playing: " + sound.path + " | " + sound.url);
@@ -209,6 +233,7 @@ public class SoundEngineMixin {
 					system.backgroundMusic("BgMusic", sound.url, sound.path, false);
 					system.setVolume("BgMusic", this.options.musicVolume);
 					system.play("BgMusic");
+					currentSoundCat = soundCat;
 				}
 			}
 		}
