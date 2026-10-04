@@ -1,12 +1,12 @@
 {
 	"required": true,
 	"minVersion": "0.8",
-	"package": "com.example.example_mod.mixin",
+	"package": "com.dopezombie420.musictomyears.mixin",
 	"compatibilityLevel": "JAVA_8",
 	"mixins": [
 	],
 	"client": [
-		"TitleScreenMixin"
+		"SoundEngineMixin"
 	],
 	"server": [
 	],
