@@ -3,14 +3,11 @@ package com.dopezombie420.musictomyears.mixin;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.Objects;
 import java.util.Random;
 
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -26,8 +23,9 @@ import paulscode.sound.SoundSystem;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.CreditsScreen;
-import net.minecraft.entity.mob.player.PlayerEntity;
 import net.minecraft.entity.mob.monster.boss.EnderDragonEntity;
+
+import com.dopezombie420.musictomyears.MusicToMyEars;
 
 @Mixin(SoundEngine.class)
 public class SoundEngineMixin {
@@ -45,7 +43,6 @@ public class SoundEngineMixin {
 	@Shadow
 	private int musicCooldown;
 	
-	private static final Logger logger = LogManager.getLogger("Music to my ears!");
 	private File resourceDir = new File(Minecraft.getWorkingDirectory(), "resources/");
 	
 	private String soundCat = null;
@@ -86,7 +83,6 @@ public class SoundEngineMixin {
 				try {
 					File desFile = new File(resourceDir.getPath(), filePath);
 					desFile.getParentFile().mkdirs();
-					logger.info("added file: " + desFile.getPath());
 					if (!desFile.exists()) {
 					    Files.copy(in, desFile.toPath());
 					}
@@ -99,11 +95,10 @@ public class SoundEngineMixin {
 		}
 	}
 
-	private Sound getMusic(Sounds soundPool, String cat) {		
-		if (!Objects.equals(cat, soundCat)) {
+	private Sound getMusic(Sounds soundPool, String cat, int cooldown) {		
+		if (!Objects.equals(cat, soundCat) && MusicToMyEars.overrideMusic) {
 			system.stop("BgMusic");
-			this.musicCooldown = 0;
-			//this.musicCooldown = this.random.nextInt(12000) + 12000;
+			this.musicCooldown = cooldown;
 			soundCat = cat;	
 		} else {
 			if (!system.playing("BgMusic") && !system.playing("streaming")) {
@@ -124,23 +119,22 @@ public class SoundEngineMixin {
 		if (started && this.options.musicVolume != 0.0F) {
 			Sound sound = null;
 			
-			if (false) {
-				//sound = this.menuMusic.getRandom();
+			if (Minecraft.getInstance().world == null) {
+				sound = getMusic(newMusic[5].soundPool, "menu", this.random.nextInt(MusicToMyEars.menuDelay[0]) + MusicToMyEars.menuDelay[1]);
 			} else if (Minecraft.getInstance().screen instanceof CreditsScreen) {
-				this.musicCooldown = 0;
-				sound = getMusic(newMusic[4].soundPool, "credits");
-			} else if (Minecraft.getInstance().player.world.getEntityCount(EnderDragonEntity.class) > 0) {
-				this.musicCooldown = 0;
-				sound = getMusic(newMusic[3].soundPool, "boss");
+				sound = getMusic(newMusic[4].soundPool, "credits", 0);
 			} else if (Minecraft.getInstance().player.dimension == -1) {
-				sound = getMusic(newMusic[1].soundPool, "nether");
+				sound = getMusic(newMusic[1].soundPool, "nether", this.random.nextInt(MusicToMyEars.netherDelay[0]) + MusicToMyEars.netherDelay[1]);
 			} else if (Minecraft.getInstance().player.dimension == 1) {
-				this.musicCooldown = 0;
-				sound = getMusic(newMusic[2].soundPool, "end");
+				if (Minecraft.getInstance().player.world.getEntityCount(EnderDragonEntity.class) > 0) {
+					sound = getMusic(newMusic[3].soundPool, "boss", 0);
+				} else {
+					sound = getMusic(newMusic[2].soundPool, "end", this.random.nextInt(MusicToMyEars.endDelay[0]) + MusicToMyEars.endDelay[1]);
+				}
 			} else if (Minecraft.getInstance().player.abilities.canFly) {
-				sound = getMusic(newMusic[0].soundPool, "creative");
+				sound = getMusic(newMusic[0].soundPool, "creative", this.random.nextInt(MusicToMyEars.creativeDelay[0]) + MusicToMyEars.creativeDelay[1]);
 			} else {
-				sound = getMusic(music, "survival");
+				sound = getMusic(music, "survival", this.random.nextInt(MusicToMyEars.survivalDelay[0]) + MusicToMyEars.survivalDelay[1]);
 			}
 			
 			if (!system.playing("BgMusic") && !system.playing("streaming")) {
@@ -150,8 +144,6 @@ public class SoundEngineMixin {
 				}
 				
 				if (sound != null) {
-					logger.info("Music Playing: " + sound.path + " | " + sound.url);
-					this.musicCooldown = this.random.nextInt(12000) + 12000;
 					system.backgroundMusic("BgMusic", sound.url, sound.path, false);
 					system.setVolume("BgMusic", this.options.musicVolume);
 					system.play("BgMusic");

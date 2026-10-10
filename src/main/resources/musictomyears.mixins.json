@@ -6,6 +6,8 @@
 	"mixins": [
 	],
 	"client": [
+		"MinecraftMixin",
+		"ClientPlayerInteractionManagerMixin",
 		"SoundEngineMixin"
 	],
 	"server": [
