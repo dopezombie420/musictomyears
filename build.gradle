@@ -7,6 +7,12 @@ plugins {
 base {
 	archivesName = project.archives_base_name
 }
+
+def p = new Properties()
+file("versions/${mc}.properties").withInputStream { p.load(it) }
+p.each { k, v -> project.ext.set(k, v) }
+project.ext.set('minecraft_version', mc)
+
 version = "${project.version}+mc${project.minecraft_version}"
 group = project.maven_group
 
@@ -30,7 +36,14 @@ dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-	nests ploceus.nests(project.nests_build)
+	if (mc == "1.5.2") {
+		exceptions ploceus.raven(project.raven_build)
+	}
+	
+	if (mc == "1.3.2" || mc == "1.4.7" || mc == "1.5.2") {
+		nests ploceus.nests(project.nests_build)
+	}
+	
 	mappings ploceus.featherMappings(project.feather_build)
 
 	ploceus.dependOsl(project.osl_version)
