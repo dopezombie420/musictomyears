@@ -96,8 +96,10 @@ public class SoundEngineMixin {
 	}
 
 	private Sound getMusic(Sounds soundPool, String cat, int cooldown) {		
-		if (!Objects.equals(cat, soundCat) && MusicToMyEars.overrideMusic) {
-			system.stop("BgMusic");
+		if (!Objects.equals(cat, soundCat)) {
+			if (MusicToMyEars.overrideMusic) {
+				system.stop("BgMusic");
+			}
 			this.musicCooldown = cooldown;
 			soundCat = cat;	
 		} else {
