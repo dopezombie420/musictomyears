@@ -20,10 +20,10 @@ import net.minecraft.client.sound.Sound;
 import net.minecraft.client.sound.SoundEngine;
 import net.minecraft.client.sound.Sounds;
 import paulscode.sound.SoundSystem;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.CreditsScreen;
 import net.minecraft.entity.mob.monster.boss.EnderDragonEntity;
+import net.ornithemc.osl.lifecycle.impl.client.MinecraftAccess;
 
 import com.dopezombie420.musictomyears.MusicToMyEars;
 
@@ -43,6 +43,7 @@ public class SoundEngineMixin {
 	@Shadow
 	private int musicCooldown;
 	
+	private static Minecraft mc = null;
 	private File resourceDir = new File(Minecraft.getWorkingDirectory(), "resources/");
 	
 	private String soundCat = null;
@@ -117,23 +118,27 @@ public class SoundEngineMixin {
 	}
 	
 	@Overwrite
-	public void tickMusic() {		
+	public void tickMusic() {
+		if (mc == null) {
+			mc = MinecraftAccess.getInstance();
+		}
+		
 		if (started && this.options.musicVolume != 0.0F) {
 			Sound sound = null;
 			
-			if (Minecraft.getInstance().world == null) {
+			if (mc.world == null) {
 				sound = getMusic(newMusic[5].soundPool, "menu", this.random.nextInt(MusicToMyEars.menuDelay[0]) + MusicToMyEars.menuDelay[1]);
-			} else if (Minecraft.getInstance().screen instanceof CreditsScreen) {
+			} else if (mc.screen instanceof CreditsScreen) {
 				sound = getMusic(newMusic[4].soundPool, "credits", 0);
-			} else if (Minecraft.getInstance().player.dimension == -1) {
+			} else if (mc.player.dimension == -1) {
 				sound = getMusic(newMusic[1].soundPool, "nether", this.random.nextInt(MusicToMyEars.netherDelay[0]) + MusicToMyEars.netherDelay[1]);
-			} else if (Minecraft.getInstance().player.dimension == 1) {
-				if (Minecraft.getInstance().player.world.getEntityCount(EnderDragonEntity.class) > 0) {
+			} else if (mc.player.dimension == 1) {
+				if (mc.player.world.getEntityCount(EnderDragonEntity.class) > 0) {
 					sound = getMusic(newMusic[3].soundPool, "boss", 0);
 				} else {
 					sound = getMusic(newMusic[2].soundPool, "end", this.random.nextInt(MusicToMyEars.endDelay[0]) + MusicToMyEars.endDelay[1]);
 				}
-			} else if (Minecraft.getInstance().player.abilities.canFly) {
+			} else if (mc.player.abilities.canFly) {
 				sound = getMusic(newMusic[0].soundPool, "creative", this.random.nextInt(MusicToMyEars.creativeDelay[0]) + MusicToMyEars.creativeDelay[1]);
 			} else {
 				sound = getMusic(music, "survival", this.random.nextInt(MusicToMyEars.survivalDelay[0]) + MusicToMyEars.survivalDelay[1]);

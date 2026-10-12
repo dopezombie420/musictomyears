@@ -8,6 +8,8 @@
 	"client": [
 		"MinecraftMixin",
 		"ClientPlayerInteractionManagerMixin",
+		"SurvivalInteractionManagerMixin",
+		"MultiplayerInteractionManagerMixin",
 		"SoundEngineMixin"
 	],
 	"server": [
