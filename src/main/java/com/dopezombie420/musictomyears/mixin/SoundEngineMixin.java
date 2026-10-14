@@ -96,7 +96,7 @@ public class SoundEngineMixin {
 		}
 	}
 
-	private Sound getMusic(Sounds soundPool, String cat, int cooldown) {		
+	private Sound getMusic(Sounds soundPool, String cat, int cooldown) {
 		if (!Objects.equals(cat, soundCat)) {
 			if (MusicToMyEars.overrideMusic) {
 				system.stop("BgMusic");
@@ -106,6 +106,10 @@ public class SoundEngineMixin {
 		} else {
 			if (!system.playing("BgMusic") && !system.playing("streaming")) {
 				return soundPool.getRandom();
+			} else {
+				if (this.musicCooldown <= 0) {
+					this.musicCooldown = cooldown;
+				}
 			}
 		}
 		
@@ -147,6 +151,7 @@ public class SoundEngineMixin {
 			if (!system.playing("BgMusic") && !system.playing("streaming")) {
 				if (this.musicCooldown > 0) {
 					this.musicCooldown--;
+					LogManager.getLogger().info("music cooldown: " + String.valueOf(this.musicCooldown));
 					return;
 				}
 				
