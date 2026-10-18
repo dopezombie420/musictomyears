@@ -149,7 +149,7 @@ public class SoundEngineMixin {
 			}
 			
 			if (!system.playing("BgMusic") && !system.playing("streaming")) {
-				if (this.musicCooldown > 0) {
+				if (this.musicCooldown > 0 && !mc.paused) {
 					this.musicCooldown--;
 					LogManager.getLogger().info("music cooldown: " + String.valueOf(this.musicCooldown));
 					return;
