@@ -22,6 +22,6 @@
 		"musictomyears.mixins.json"
 	],
 	"depends": {
-		"minecraft": ">=1.1 <=1.5.2"
+		"minecraft": "1.6.4"
 	}
 }

@@ -36,12 +36,16 @@ dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-	if (mc == "1.5.2") {
+	if (mc == "1.5.2" || mc == "1.6.4") {
 		exceptions ploceus.raven(project.raven_build)
 	}
 	
-	if (mc == "1.3.2" || mc == "1.4.7" || mc == "1.5.2") {
+	if (mc == "1.3.2" || mc == "1.4.7" || mc == "1.5.2" || mc == "1.6.4") {
 		nests ploceus.nests(project.nests_build)
+	}
+	
+	if (mc == "1.6.4" ) {
+		signatures ploceus.sparrow(project.sparrow_build)
 	}
 	
 	mappings ploceus.featherMappings(project.feather_build)
