@@ -34,8 +34,6 @@ public class SoundEngineMixin {
 	@Shadow
 	private SoundSystem system;
 	@Shadow
-	private Sounds music;
-	@Shadow
 	private Random random;
 	@Shadow
 	private int musicCooldown;
@@ -53,6 +51,7 @@ public class SoundEngineMixin {
 	private Sounds bossMusic = new Sounds(mc.getResourceManager(), "sounds", true);
 	private Sounds creditsMusic = new Sounds(mc.getResourceManager(), "sounds", true);
 	private Sounds menuMusic = new Sounds(mc.getResourceManager(), "sounds", true);
+	private Sounds survivalMusic = new Sounds(mc.getResourceManager(), "sounds", true);
 	
 	private Sound getMusic(Sounds soundPool, String cat, int cooldown) {
 		if (!Objects.equals(cat, soundCat)) {
@@ -78,6 +77,10 @@ public class SoundEngineMixin {
 			string3 = string3.substring(i + 1).replace('\\', '/');
 			if (string3.contains("music/game/creative".replace('\\', '/'))) {
 				creativeMusic.load(string3);
+				
+				if (MusicToMyEars.overworldExtended) {
+					survivalMusic.load(string3);
+				}
 			} else if (string3.contains("music/game/nether".replace('\\', '/'))) {
 				netherMusic.load(string3);
 			} else if (string3.contains("music/game/end/end".replace('\\', '/'))) {
@@ -88,6 +91,16 @@ public class SoundEngineMixin {
 				creditsMusic.load(string3);
 			} else if (string3.contains("music/menu".replace('\\', '/'))) {
 				menuMusic.load(string3);
+				
+				if (MusicToMyEars.overworldExtended) {
+					survivalMusic.load(string3);
+					creativeMusic.load(string3);
+				}
+			} else if (string3.contains("music/game/calm".replace('\\', '/')) || string3.contains("music/game/hal".replace('\\', '/')) || string3.contains("music/game/nuance".replace('\\', '/')) || string3.contains("music/game/piano".replace('\\', '/'))) {
+				survivalMusic.load(string3);
+				if (MusicToMyEars.overworldExtended) {
+					creativeMusic.load(string3);	
+				}
 			}
 		}
 	}
@@ -112,13 +125,15 @@ public class SoundEngineMixin {
 			} else if (mc.player.abilities.canFly) {
 				sound = getMusic(creativeMusic, "creative", this.random.nextInt(MusicToMyEars.creativeDelay[0]) + MusicToMyEars.creativeDelay[1]);
 			} else {
-				sound = getMusic(music, "survival", this.random.nextInt(MusicToMyEars.survivalDelay[0]) + MusicToMyEars.survivalDelay[1]);
+				sound = getMusic(survivalMusic, "survival", this.random.nextInt(MusicToMyEars.survivalDelay[0]) + MusicToMyEars.survivalDelay[1]);
 			}
 			
 			if (!system.playing("BgMusic") && !system.playing("streaming")) {
-				if (this.musicCooldown > 0 && !(mc.screen instanceof GameMenuScreen)) {
-					this.musicCooldown--;
-					return;
+				if (this.musicCooldown > 0) {
+					if (!(mc.screen instanceof GameMenuScreen)) {
+						this.musicCooldown--;
+					}
+					//return;
 				}
 				
 				if (sound != null) {
