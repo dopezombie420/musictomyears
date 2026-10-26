@@ -15,6 +15,7 @@ public class MusicToMyEars implements ModInitializer {
 	
 	// Configuration settings
 	public static boolean overrideMusic = true;
+	public static boolean overworldExtended = false;
 	
 	public static int[] survivalDelay = {12000, 12000};
 	public static int[] creativeDelay = {2400, 1200};
@@ -22,10 +23,11 @@ public class MusicToMyEars implements ModInitializer {
 	public static int[] endDelay = {18000, 6000};
 	public static int[] menuDelay = {580, 20};
 	
-    public static void initConfig() {
+    private static void initConfig() {
     	Properties props = new Properties();
     	
         props.setProperty("overrideMusic", String.valueOf(overrideMusic));
+        props.setProperty("overworldExtended", String.valueOf(overworldExtended));
         
         props.setProperty("survivalDelay", String.valueOf(survivalDelay[0] + "-" + survivalDelay[1]));
         props.setProperty("creativeDelay", String.valueOf(creativeDelay[0] + "-" + creativeDelay[1]));
@@ -40,14 +42,14 @@ public class MusicToMyEars implements ModInitializer {
         }
     }
     
-    public static int[] parseArray(String prop) {
+    private static int[] parseArray(String prop) {
     	return new int[] {
-        		Integer.parseInt(prop.split("-")[0]),
-        		Integer.parseInt(prop.split("-")[1]),
+        	Integer.parseInt(prop.split("-")[0]),
+        	Integer.parseInt(prop.split("-")[1]),
         };
     }
 	
-	public static void loadConfig() {
+    private static void loadConfig() {
 		if (!Files.exists(configFile)) {
 			initConfig();
 			return;
@@ -63,6 +65,7 @@ public class MusicToMyEars implements ModInitializer {
         }
         
         overrideMusic = Boolean.parseBoolean(props.getProperty("overrideMusic"));
+        overworldExtended = Boolean.parseBoolean(props.getProperty("overworldExtended"));
         
         survivalDelay = parseArray(props.getProperty("survivalDelay"));
         creativeDelay = parseArray(props.getProperty("creativeDelay"));
